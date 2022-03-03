@@ -106,7 +106,7 @@ class _SearchScreenState extends State<SearchScreen> {
                                       ConnectionState.done) {
                                     return GestureDetector(
                                       onTap: () {
-                                        OpenAssetAudio(
+                                         OpenAssetAudio(
                                                 allsong: searchResult,
                                                 index: index)
                                             .openAsset(
