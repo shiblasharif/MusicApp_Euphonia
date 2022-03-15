@@ -1,12 +1,14 @@
 import 'package:assets_audio_player/assets_audio_player.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:get/get.dart';
+import 'package:music_player/controller/controller.dart';
 import 'package:music_player/database/box.dart';
 import 'package:music_player/database/songmodel_adapter.dart';
 import 'package:music_player/widgets/buildsheet.dart';
 import 'package:on_audio_query/on_audio_query.dart';
 
-class playingsong extends StatefulWidget {
+class playingsong extends StatelessWidget {
   int index;
   List<Audio> audiosongs = [];
   List<Audio> a = [];
@@ -17,18 +19,13 @@ class playingsong extends StatefulWidget {
     required this.audiosongs,
   }) : super(key: key);
 
-  @override
-  _playsongState createState() => _playsongState();
-}
-
-class _playsongState extends State<playingsong> {
   final AssetsAudioPlayer assetAudioPlayer = AssetsAudioPlayer.withId("0");
 
   Audio find(List<Audio> source, String fromPath) {
     return source.firstWhere((element) => element.path == fromPath);
   }
 
-  late TextEditingController controller;
+  // late TextEditingController controller;
   final box = Boxes.getInstance();
 
   List playlists = [];
@@ -38,20 +35,8 @@ class _playsongState extends State<playingsong> {
   List<dynamic>? likedSongs = [];
 
   @override
-  void initState() {
-    super.initState();
-    dbSongs = box.get("musics") as List<Songs>;
-    controller = TextEditingController();
-  }
-
-  @override
-  void dispose() {
-    controller.dispose();
-    super.dispose();
-  }
-
-  @override
   Widget build(BuildContext context) {
+    dbSongs = box.get("musics") as List<Songs>;
     return Scaffold(
         //backgroundColor: const Color(0xFF091B46),
         backgroundColor: Colors.blueGrey,
@@ -75,8 +60,7 @@ class _playsongState extends State<playingsong> {
         ),
         body: assetAudioPlayer.builderCurrent(
           builder: (context, Playing? playing) {
-            final myAudio =
-                find(widget.audiosongs, playing!.audio.assetAudioPath);
+            final myAudio = find(audiosongs, playing!.audio.assetAudioPath);
 
             final currentSong = dbSongs.firstWhere((element) =>
                 element.id.toString() == myAudio.metas.id.toString());
@@ -108,79 +92,82 @@ class _playsongState extends State<playingsong> {
                   const SizedBox(
                     height: 350,
                   ),
-                  ListTile(
-                    leading: IconButton(
-                      icon: const Icon(
-                        Icons.library_add,
-                        size: 30,
-                        color: Colors.white,
+                  GetBuilder<Controller>(builder: (_controller) {
+                    return ListTile(
+                      leading: IconButton(
+                        icon: const Icon(
+                          Icons.library_add,
+                          size: 30,
+                          color: Colors.white,
+                        ),
+                        onPressed: () {
+                          showModalBottomSheet(
+                              backgroundColor: Colors.grey,
+                              shape: const RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.vertical(
+                                      top: Radius.circular(20))),
+                              context: context,
+                              builder: (context) => BuildSheet(song: myAudio)
+                              // buildSheet(song: dbSongs[index]),
+                              );
+                          _controller.update();
+                        },
                       ),
-                      onPressed: () {
-                        showModalBottomSheet(
-                            backgroundColor: Colors.grey,
-                            shape: const RoundedRectangleBorder(
-                                borderRadius: BorderRadius.vertical(
-                                    top: Radius.circular(20))),
-                            context: context,
-                            builder: (context) => BuildSheet(song: myAudio)
-                            // buildSheet(song: dbSongs[index]),
-                            );
-                      },
-                    ),
-                    title: Text(
-                      myAudio.metas.title!,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
-                        fontSize: 18,
-                        color: Colors.white,
+                      title: Text(
+                        myAudio.metas.title!,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(
+                          fontSize: 18,
+                          color: Colors.white,
+                        ),
                       ),
-                    ),
-                    subtitle: Text(
-                      myAudio.metas.artist!,
-                      style: const TextStyle(
-                        fontSize: 15,
-                        color: Colors.white,
+                      subtitle: Text(
+                        myAudio.metas.artist!,
+                        style: const TextStyle(
+                          fontSize: 15,
+                          color: Colors.white,
+                        ),
                       ),
-                    ),
-                    trailing: likedSongs!
-                            .where((element) =>
-                                element.id.toString() ==
-                                currentSong.id.toString())
-                            .isEmpty
-                        ? IconButton(
-                            icon: const Icon(
-                              Icons.favorite_outline,
-                              size: 30,
-                              color: Colors.white,
-                            ),
-                            onPressed: () async {
-                              Fluttertoast.showToast(
-                                  msg: "Song added to Favourites");
-                              likedSongs?.add(currentSong);
-                              box.put("favorites", likedSongs!);
-                              likedSongs = box.get("favorites");
-                              setState(() {});
-                            },
-                          )
-                        : IconButton(
-                            icon: const Icon(
-                              Icons.favorite,
-                              size: 30,
-                              color: Colors.white,
-                            ),
-                            onPressed: () async {
-                              Fluttertoast.showToast(
-                                  msg: "Song removed from Favourites");
-                              setState(() {
+                      trailing: likedSongs!
+                              .where((element) =>
+                                  element.id.toString() ==
+                                  currentSong.id.toString())
+                              .isEmpty
+                          ? IconButton(
+                              icon: const Icon(
+                                Icons.favorite_outline,
+                                size: 30,
+                                color: Colors.white,
+                              ),
+                              onPressed: () async {
+                                Fluttertoast.showToast(
+                                    msg: "Song added to Favourites");
+                                likedSongs?.add(currentSong);
+                                box.put("favorites", likedSongs!);
+                                likedSongs = box.get("favorites");
+                                // setState(() {});
+                                _controller.update();
+                              },
+                            )
+                          : IconButton(
+                              icon: const Icon(
+                                Icons.favorite,
+                                size: 30,
+                                color: Colors.white,
+                              ),
+                              onPressed: () async {
+                                Fluttertoast.showToast(
+                                    msg: "Song removed from Favourites");
                                 likedSongs?.removeWhere((elemet) =>
                                     elemet.id.toString() ==
                                     currentSong.id.toString());
                                 box.put("favorites", likedSongs!);
-                              });
-                            },
-                          ),
-                  ),
+                                _controller.update();
+                              },
+                            ),
+                    );
+                  }),
                   SizedBox(
                     height: 20,
                   ),

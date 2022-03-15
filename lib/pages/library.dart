@@ -1,20 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:get/get.dart';
 import 'package:hive_flutter/hive_flutter.dart';
+import 'package:music_player/controller/controller.dart';
 import 'package:music_player/database/box.dart';
 import 'package:music_player/database/songmodel_adapter.dart';
 import 'package:music_player/pages/favorites.dart';
 import 'package:music_player/pages/playlistview.dart';
 
-class Library extends StatefulWidget {
-  const Library({Key? key}) : super(key: key);
+class Library extends StatelessWidget {
+  Library({Key? key}) : super(key: key);
 
-  @override
-  _LibraryState createState() => _LibraryState();
-}
-
-class _LibraryState extends State<Library> {
-  late TextEditingController controller;
+  TextEditingController controller = TextEditingController();
 
   final excistingPlaylist = SnackBar(
     content: const Text(
@@ -29,18 +26,18 @@ class _LibraryState extends State<Library> {
   //List<Songs> library = [];
   String? playlistName = '';
 
-  @override
-  void initState() {
-    super.initState();
-    controller = TextEditingController();
-  }
+  // @override
+  // void initState() {
+  //   super.initState();
+  //   controller = TextEditingController();
+  // }
 
-  @override
-  void dispose() {
-    // Clean up the controller when the widget is disposed.
-    controller.dispose();
-    super.dispose();
-  }
+  // @override
+  // void dispose() {
+  //   // Clean up the controller when the widget is disposed.
+  //   controller.dispose();
+  //   super.dispose();
+  // }
 
   @override
   Widget build(BuildContext context) {
@@ -74,15 +71,39 @@ class _LibraryState extends State<Library> {
                           cursorColor: Colors.black,
                         ),
                         actions: [
-                          TextButton(
-                              onPressed: () {
-                                submit();
-                              },
-                              child: Text(
-                                "ADD",
-                                style: TextStyle(
-                                    color: Colors.black, fontSize: 18),
-                              ))
+                          GetBuilder<Controller>(builder: (_controller) {
+                            return TextButton(
+                                onPressed: () {
+                                  // submit();
+                                  playlistName = controller.text;
+                                  List<Songs> librayry = [];
+                                  List? excistingName = [];
+                                  if (playlists.isNotEmpty) {
+                                    excistingName = playlists
+                                        .where((element) =>
+                                            element == playlistName)
+                                        .toList();
+                                  }
+
+                                  if (playlistName != '' &&
+                                      excistingName.isEmpty) {
+                                    box.put(playlistName, librayry);
+                                    Navigator.of(context).pop();
+                                    // setState(() {});
+                                    playlists = box.keys.toList();
+                                    _controller.update();
+                                  } else {
+                                    ScaffoldMessenger.of(context)
+                                        .showSnackBar(excistingPlaylist);
+                                  }
+                                  controller.clear();
+                                },
+                                child: Text(
+                                  "ADD",
+                                  style: TextStyle(
+                                      color: Colors.black, fontSize: 18),
+                                ));
+                          })
                         ],
                       )),
               leading: Icon(
@@ -95,10 +116,32 @@ class _LibraryState extends State<Library> {
               ),
             ),
           ),
-          libraryItems(
-            title: "Favourites",
-            leadIcon: Icons.favorite,
-            leadSize: 25,
+          // libraryItems(
+          //   title: "Favourites",
+          //   leadIcon: Icons.favorite,
+          //   leadSize: 25,
+          // ),
+          Padding(
+            padding: const EdgeInsets.only(left: 5, right: 5, bottom: 15),
+            child: ListTile(
+              onTap: () => Navigator.push(context,
+                  MaterialPageRoute(builder: (context) => Favourites())),
+              leading: Icon(
+                Icons.favorite,
+                color: Colors.white,
+              ),
+              title: Text(
+                "Favourites",
+                style: const TextStyle(fontSize: 20, color: Colors.white),
+              ),
+              // trailing: IconButton(
+              //   onPressed: () => Navigator.push(context,MaterialPageRoute(builder: (context) =>  Favourites())),
+              //   icon: Icon(
+              //     tail,
+              //     size: 20,
+              //   ),
+              // ),
+            ),
           ),
           ValueListenableBuilder(
               valueListenable: box.listenable(),
@@ -113,49 +156,53 @@ class _LibraryState extends State<Library> {
                         child: playlists[index] != "musics" &&
                                 playlists[index] != "favorites"
                             ? libraryList(
-                                child: ListTile(
-                                    onTap: () {
-                                      Navigator.push(
-                                        context,
-                                        MaterialPageRoute(
-                                            builder: (context) =>
-                                                PlaylistScreen(
-                                                  playlistName:
-                                                      playlists[index],
-                                                )),
-                                      );
-                                    },
-                                    leading: Icon(
-                                      Icons.playlist_play,
-                                      color: Colors.white,
-                                      size: 30,
-                                    ),
-                                    title: Text(
-                                      playlists[index].toString(),
-                                      style: const TextStyle(
-                                          fontSize: 20, color: Colors.white),
-                                    ),
-                                    trailing: PopupMenuButton(
-                                        icon: Icon(
-                                          Icons.more_vert,
-                                          color: Colors.white,
-                                        ),
-                                        itemBuilder: (context) => [
-                                              PopupMenuItem(
-                                                child: Text('Delete playlist'),
-                                                value: "0",
-                                              ),
-                                            ],
-                                        onSelected: (value) {
-                                          Fluttertoast.showToast(
-                                              msg: "Deleted Successfully");
-                                          if (value == "0") {
-                                            box.delete(playlists[index]);
-                                            setState(() {
+                                child: GetBuilder<Controller>(
+                                    builder: (_controller) {
+                                  return ListTile(
+                                      onTap: () {
+                                        Navigator.push(
+                                          context,
+                                          MaterialPageRoute(
+                                              builder: (context) =>
+                                                  PlaylistScreen(
+                                                    playlistName:
+                                                        playlists[index],
+                                                  )),
+                                        );
+                                      },
+                                      leading: Icon(
+                                        Icons.playlist_play,
+                                        color: Colors.white,
+                                        size: 30,
+                                      ),
+                                      title: Text(
+                                        playlists[index].toString(),
+                                        style: const TextStyle(
+                                            fontSize: 20, color: Colors.white),
+                                      ),
+                                      trailing: PopupMenuButton(
+                                          icon: Icon(
+                                            Icons.more_vert,
+                                            color: Colors.white,
+                                          ),
+                                          itemBuilder: (context) => [
+                                                PopupMenuItem(
+                                                  child:
+                                                      Text('Delete playlist'),
+                                                  value: "0",
+                                                ),
+                                              ],
+                                          onSelected: (value) {
+                                            Fluttertoast.showToast(
+                                                msg: "Deleted Successfully");
+                                            if (value == "0") {
+                                              box.delete(playlists[index]);
+                                              // setState(() {});
                                               playlists = box.keys.toList();
-                                            });
-                                          }
-                                        })),
+                                              _controller.update();
+                                            }
+                                          }));
+                                }),
                               )
                             : Container()));
               }),
@@ -210,35 +257,34 @@ class _LibraryState extends State<Library> {
     );
   }
 
-  Padding libraryItems(
-      {required title,
-      leadIcon = Icons.favorite,
-      double leadSize = 28,
-      tail,
-      leadClr = Colors.white}) {
-    return Padding(
-      padding: const EdgeInsets.only(left: 5, right: 5, bottom: 15),
-      child: ListTile(
-          onTap: () => Navigator.push(context,
-              MaterialPageRoute(builder: (context) => const Favourites())),
-          leading: Icon(
-            Icons.favorite,
-            color: Colors.white,
-          ),
-          title: Text(
-            title,
-            style: const TextStyle(fontSize: 20, color: Colors.white),
-          ),
-          trailing: IconButton(
-            onPressed: () => Navigator.push(context,
-                MaterialPageRoute(builder: (context) => const Favourites())),
-            icon: Icon(
-              tail,
-              size: 20,
-            ),
-          )),
-    );
-  }
+  // Padding libraryItems(
+  //     {required title,
+  //     leadIcon = Icons.favorite,
+  //     double leadSize = 28,
+  //     tail,
+  //     leadClr = Colors.white}) {
+  //   return Padding(
+  //     padding: const EdgeInsets.only(left: 5, right: 5, bottom: 15),
+  //     child: ListTile(
+  //         onTap: () => Navigator.push(context,
+  //             MaterialPageRoute(builder: (context) =>  Favourites())),
+  //         leading: Icon(
+  //           Icons.favorite,
+  //           color: Colors.white,
+  //         ),
+  //         title: Text(
+  //           title,
+  //           style: const TextStyle(fontSize: 20, color: Colors.white),
+  //         ),
+  //         trailing: IconButton(
+  //           onPressed: () => Navigator.push(context,MaterialPageRoute(builder: (context) =>  Favourites())),
+  //           icon: Icon(
+  //             tail,
+  //             size: 20,
+  //           ),
+  //         )),
+  //   );
+  // }
 
   Padding libraryList({required child}) {
     return Padding(
@@ -247,25 +293,25 @@ class _LibraryState extends State<Library> {
     );
   }
 
-  void submit() {
-    playlistName = controller.text;
-    List<Songs> librayry = [];
-    List? excistingName = [];
-    if (playlists.isNotEmpty) {
-      excistingName =
-          playlists.where((element) => element == playlistName).toList();
-    }
+  // void submit() {
+  //   playlistName = controller.text;
+  //   List<Songs> librayry = [];
+  //   List? excistingName = [];
+  //   if (playlists.isNotEmpty) {
+  //     excistingName =
+  //         playlists.where((element) => element == playlistName).toList();
+  //   }
 
-    if (playlistName != '' && excistingName.isEmpty) {
-      box.put(playlistName, librayry);
-      Navigator.of(context).pop();
-      setState(() {
-        playlists = box.keys.toList();
-      });
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(excistingPlaylist);
-    }
-
-    controller.clear();
-  }
+  //   if (playlistName != '' && excistingName.isEmpty) {
+  //     box.put(playlistName, librayry);
+  //     Navigator.of(context).pop();
+  //     setState(() {
+  //       playlists = box.keys.toList();
+  //     });
+  //   }
+  //   else {
+  //     ScaffoldMessenger.of(context).showSnackBar(excistingPlaylist);
+  //   }
+  //   controller.clear();
+  // }
 }

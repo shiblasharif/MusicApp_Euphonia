@@ -1,7 +1,7 @@
-import 'dart:ui';
-
 import 'package:assets_audio_player/assets_audio_player.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'package:music_player/controller/controller.dart';
 import 'package:music_player/database/box.dart';
 import 'package:music_player/database/songmodel_adapter.dart';
 import 'package:music_player/openassetaudio/openassetaudio.dart';
@@ -14,17 +14,16 @@ import 'package:music_player/widgets/snakbars.dart';
 import 'package:on_audio_query/on_audio_query.dart';
 
 // ignore: must_be_immutable
-class Gridsong extends StatefulWidget {
+class Gridsong extends StatelessWidget {
   List<Audio> audiosongs = [];
   Gridsong({Key? key, required this.audiosongs}) : super(key: key);
 
-  @override
-  _GridsongState createState() => _GridsongState();
-}
+//   @override
+//   _GridsongState createState() => _GridsongState();
+// }
 
-class _GridsongState extends State<Gridsong> {
+// class _GridsongState extends State<Gridsong> {
   List? dbSongs = [];
-  // late TextEditingController controller;
   List playlists = [];
   List<dynamic>? favorites = [];
   String? playlistName = '';
@@ -39,23 +38,18 @@ class _GridsongState extends State<Gridsong> {
     return source.firstWhere((element) => element.path == fromPath);
   }
 
-  @override
-  void initState() {
-    super.initState();
-    dbSongs = box.get("musics");
-    // controller = TextEditingController();
-    likedSongs = box.get("favorites");
-  }
-
-  @override
-  void dispose() {
-    // Clean up the controller when the widget is disposed.
-    // controller.dispose();
-    super.dispose();
-  }
+  // @override
+  // void initState() {
+  //   super.initState();
+  //   dbSongs = box.get("musics");
+  //   likedSongs = box.get("favorites");
+  // }
 
   @override
   Widget build(BuildContext context) {
+    dbSongs = box.get("musics");
+    likedSongs = box.get("favorites");
+
     return Scaffold(
         backgroundColor: const Color(0xFF091B46),
         appBar: AppBar(
@@ -70,10 +64,7 @@ class _GridsongState extends State<Gridsong> {
             IconButton(
               icon: const Icon(Icons.settings),
               onPressed: () {
-                Navigator.of(context)
-                    .push(MaterialPageRoute(builder: (context) {
-                  return Settings();
-                }));
+                Get.to(() => Settings());
               },
             )
           ],
@@ -91,7 +82,7 @@ class _GridsongState extends State<Gridsong> {
                       mainAxisSpacing: 5,
                       crossAxisSpacing: 5,
                       childAspectRatio: 1.15),
-                  itemCount: widget.audiosongs.length,
+                  itemCount: audiosongs.length,
                   itemBuilder: (BuildContext ctx, int index) {
                     return Stack(
                         alignment: AlignmentDirectional.bottomCenter,
@@ -109,8 +100,9 @@ class _GridsongState extends State<Gridsong> {
                                         nullArtworkWidget: Image.asset(
                                           "assets/images/default.jpeg",
                                         ),
-                                        id: int.parse(widget
-                                            .audiosongs[index].metas.id
+                                        id: int.parse(audiosongs[index]
+                                            .metas
+                                            .id
                                             .toString()),
                                         type: ArtworkType.AUDIO),
                                   ),
@@ -128,7 +120,7 @@ class _GridsongState extends State<Gridsong> {
                                         padding: const EdgeInsets.only(
                                             top: 8, left: 5),
                                         child: Text(
-                                          widget.audiosongs[index].metas.title!,
+                                          audiosongs[index].metas.title!,
                                           maxLines: 1,
                                           overflow: TextOverflow.ellipsis,
                                           style: TextStyle(
@@ -144,152 +136,153 @@ class _GridsongState extends State<Gridsong> {
                             ),
                             onTap: () async {
                               await OpenAssetAudio(allsong: [], index: index)
-                                  .openAsset(
-                                      index: index, audios: widget.audiosongs);
-                              Navigator.of(context).push(MaterialPageRoute(
-                                  builder: (context) => playingsong(
-                                        index: index,
-                                        audiosongs: widget.audiosongs,
-                                      )));
+                                  .openAsset(index: index, audios: audiosongs);
+                              Get.to(() => playingsong(
+                                    index: index,
+                                    audiosongs: audiosongs,
+                                  ));
                             },
+
+                            ////Dialog box////
+
                             onLongPress: () => showDialog(
                               context: context,
                               builder: (BuildContext context) {
                                 likedSongs = box.get("favorites");
-                                return Dialog(
-                                    backgroundColor: Colors.grey.withOpacity(1),
-                                    // shape: RoundedRectangleBorder(
-                                    //   borderRadius: BorderRadius.circular(50),
-                                    // ),
-                                    child: Padding(
-                                      padding: const EdgeInsets.all(12.0),
-                                      child: Column(
-                                          mainAxisSize: MainAxisSize.min,
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.center,
-                                          children: [
-                                            Text(
-                                              widget
-                                                  .audiosongs[index].metas.title
-                                                  .toString(),
-                                              maxLines: 1,
-                                              overflow: TextOverflow.ellipsis,
-                                              style: TextStyle(
-                                                  color: Colors.black,
-                                                  fontWeight: FontWeight.bold,
-                                                  fontSize: 18),
-                                            ),
-                                            ListTile(
-                                              title: const Text(
-                                                "Add to Playlist",
+                                return GetBuilder<Controller>(
+                                    builder: (_controller) {
+                                  return Dialog(
+                                      backgroundColor:
+                                          Colors.grey.withOpacity(1),
+                                      child: Padding(
+                                        padding: const EdgeInsets.all(12.0),
+                                        child: Column(
+                                            mainAxisSize: MainAxisSize.min,
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.center,
+                                            children: [
+                                              Text(
+                                                audiosongs[index]
+                                                    .metas
+                                                    .title
+                                                    .toString(),
+                                                maxLines: 1,
+                                                overflow: TextOverflow.ellipsis,
                                                 style: TextStyle(
-                                                    color: Colors.white,
-                                                    fontSize: 20),
+                                                    color: Colors.black,
+                                                    fontWeight: FontWeight.bold,
+                                                    fontSize: 18),
                                               ),
-                                              // trailing: const Icon(Icons.add),
-                                              onTap: () {
-                                                Navigator.of(context).pop();
-                                                showModalBottomSheet(
-                                                    backgroundColor:
-                                                        Colors.grey,
-                                                    shape: const RoundedRectangleBorder(
-                                                        borderRadius:
-                                                            BorderRadius.vertical(
-                                                                top: Radius
-                                                                    .circular(
-                                                                        20))),
-                                                    context: context,
-                                                    builder: (context) =>
-                                                        BuildSheet(
-                                                            song: widget
-                                                                    .audiosongs[
-                                                                index])
-                                                    // buildSheet(song: dbSongs[index]),
-                                                    );
-                                              },
-                                            ),
-                                            likedSongs!
-                                                    .where((element) =>
-                                                        element.id.toString() ==
-                                                        dbSongs![index]
-                                                            .id
-                                                            .toString())
-                                                    .isEmpty
-                                                ? ListTile(
-                                                    title: const Text(
-                                                      "Add to Favorites",
-                                                      style: TextStyle(
-                                                          color: Colors.white,
-                                                          fontSize: 20),
-                                                    ),
-                                                    onTap: () async {
-                                                      final songs =
-                                                          box.get("musics")
-                                                              as List<Songs>;
-                                                      final temp = songs
-                                                          .firstWhere((element) =>
-                                                              element.id
-                                                                  .toString() ==
-                                                              widget
-                                                                  .audiosongs[
-                                                                      index]
-                                                                  .metas
-                                                                  .id
-                                                                  .toString());
-                                                      favorites = likedSongs;
-                                                      favorites?.add(temp);
-                                                      box.put("favorites",
-                                                          favorites!);
+                                              ListTile(
+                                                title: const Text(
+                                                  "Add to Playlist",
+                                                  style: TextStyle(
+                                                      color: Colors.white,
+                                                      fontSize: 20),
+                                                ),
+                                                onTap: () {
+                                                  Get.back();
+                                                  showModalBottomSheet(
+                                                      backgroundColor:
+                                                          Colors.grey,
+                                                      shape: const RoundedRectangleBorder(
+                                                          borderRadius:
+                                                              BorderRadius.vertical(
+                                                                  top: Radius
+                                                                      .circular(
+                                                                          20))),
+                                                      context: context,
+                                                      builder: (context) =>
+                                                          BuildSheet(
+                                                              song: audiosongs[
+                                                                  index]));
+                                                },
+                                              ),
+                                              likedSongs!
+                                                      .where((element) =>
+                                                          element.id
+                                                              .toString() ==
+                                                          dbSongs![index]
+                                                              .id
+                                                              .toString())
+                                                      .isEmpty
+                                                  ? ListTile(
+                                                      title: const Text(
+                                                        "Add to Favorites",
+                                                        style: TextStyle(
+                                                            color: Colors.white,
+                                                            fontSize: 20),
+                                                      ),
+                                                      onTap: () async {
+                                                        final songs =
+                                                            box.get("musics")
+                                                                as List<Songs>;
+                                                        final temp = songs
+                                                            .firstWhere((element) =>
+                                                                element.id
+                                                                    .toString() ==
+                                                                audiosongs[
+                                                                        index]
+                                                                    .metas
+                                                                    .id
+                                                                    .toString());
+                                                        favorites = likedSongs;
+                                                        favorites?.add(temp);
+                                                        box.put("favorites",
+                                                            favorites!);
 
-                                                      Navigator.of(context)
-                                                          .pop();
-                                                      ScaffoldMessenger.of(
-                                                              context)
-                                                          .showSnackBar(
-                                                              SnackBars()
-                                                                  .likedAdd);
-                                                    },
-                                                  )
-                                                : ListTile(
-                                                    title: const Text(
-                                                        "Remove from Favorites"),
-                                                    trailing: const Icon(
-                                                      Icons.favorite_rounded,
-                                                      color: Colors.redAccent,
+                                                        Get.back();
+                                                        ScaffoldMessenger.of(
+                                                                context)
+                                                            .showSnackBar(
+                                                                SnackBars()
+                                                                    .likedAdd);
+                                                      },
+                                                    )
+                                                  : ListTile(
+                                                      title: const Text(
+                                                          "Remove from Favorites"),
+                                                      trailing: const Icon(
+                                                        Icons.favorite_rounded,
+                                                        color: Colors.redAccent,
+                                                      ),
+                                                      onTap: () async {
+                                                        likedSongs?.removeWhere(
+                                                            (elemet) =>
+                                                                elemet.id
+                                                                    .toString() ==
+                                                                dbSongs![index]
+                                                                    .id
+                                                                    .toString());
+                                                        await box.put(
+                                                            "favorites",
+                                                            likedSongs!);
+                                                        // setState(() {});
+                                                        _controller.update();
+                                                        Get.back();
+                                                        ScaffoldMessenger.of(
+                                                                context)
+                                                            .showSnackBar(
+                                                                SnackBars()
+                                                                    .likedRemove);
+                                                      },
                                                     ),
-                                                    onTap: () async {
-                                                      likedSongs?.removeWhere(
-                                                          (elemet) =>
-                                                              elemet.id
-                                                                  .toString() ==
-                                                              dbSongs![index]
-                                                                  .id
-                                                                  .toString());
-                                                      await box.put("favorites",
-                                                          likedSongs!);
-                                                      setState(() {});
-
-                                                      Navigator.of(context)
-                                                          .pop();
-                                                      ScaffoldMessenger.of(
-                                                              context)
-                                                          .showSnackBar(
-                                                              SnackBars()
-                                                                  .likedRemove);
-                                                    },
-                                                  ),
-                                          ]),
-                                    ));
+                                            ]),
+                                      ));
+                                });
                               },
                             ),
                           )
                         ]);
                   },
                 ),
+
+                ////bottom playing////
+
                 assetAudioPlayer.builderCurrent(
                     builder: (BuildContext context, Playing? playing) {
                   final myAudio =
-                      find(widget.audiosongs, playing!.audio.assetAudioPath);
+                      find(audiosongs, playing!.audio.assetAudioPath);
                   return Column(children: [
                     Expanded(
                         child: Align(
@@ -307,7 +300,7 @@ class _GridsongState extends State<Gridsong> {
                               MaterialPageRoute(
                                   builder: (context) => playingsong(
                                         index: 0,
-                                        audiosongs: widget.audiosongs,
+                                        audiosongs: audiosongs,
                                       )),
                             );
                           },
@@ -429,23 +422,4 @@ class _GridsongState extends State<Gridsong> {
           )
         ]));
   }
-}
-
-Widget dialogContainer(Widget child) {
-  return ClipRRect(
-    borderRadius: const BorderRadius.all(Radius.circular(15)),
-    child: BackdropFilter(
-      filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
-      child: Container(
-        color: Colors.grey.withOpacity(0.1),
-        child: child,
-      ),
-    ),
-  );
-}
-
-Padding libraryList({required child}) {
-  return Padding(
-      padding: const EdgeInsets.only(left: 5, right: 5, bottom: 10),
-      child: child);
 }

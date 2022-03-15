@@ -1,7 +1,9 @@
 import 'package:assets_audio_player/assets_audio_player.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:get/get.dart';
 import 'package:hive_flutter/hive_flutter.dart';
+import 'package:music_player/controller/controller.dart';
 import 'package:music_player/database/box.dart';
 import 'package:music_player/database/songmodel_adapter.dart';
 import 'package:music_player/openassetaudio/openassetaudio.dart';
@@ -9,16 +11,11 @@ import 'package:music_player/pages/playingsong.dart';
 import 'package:music_player/widgets/bottomsheet.dart';
 import 'package:on_audio_query/on_audio_query.dart';
 
-class PlaylistScreen extends StatefulWidget {
+class PlaylistScreen extends StatelessWidget {
   String playlistName;
 
   PlaylistScreen({Key? key, required this.playlistName}) : super(key: key);
 
-  @override
-  _PlaylistScreenState createState() => _PlaylistScreenState();
-}
-
-class _PlaylistScreenState extends State<PlaylistScreen> {
   // List<Songs>? dbSongs = [];
 
   List<Songs>? playlistSongs = [];
@@ -26,11 +23,11 @@ class _PlaylistScreenState extends State<PlaylistScreen> {
 
   final box = Boxes.getInstance();
 
-  @override
-  void initState() {
-    super.initState();
-    // getSongs();
-  }
+  // @override
+  // void initState() {
+  //   super.initState();
+  //   // getSongs();
+  // }
 
   // getSongs() {
   //   dbSongs = box.get("musics") as List<Songs>;
@@ -45,7 +42,7 @@ class _PlaylistScreenState extends State<PlaylistScreen> {
         elevation: 0,
         backgroundColor: const Color(0xFF091B46),
         title: Text(
-          widget.playlistName,
+          playlistName,
           style: TextStyle(fontSize: 25),
         ),
         leading: IconButton(
@@ -70,7 +67,7 @@ class _PlaylistScreenState extends State<PlaylistScreen> {
                     context: context,
                     builder: (context) {
                       return buildSheet(
-                        playlistName: widget.playlistName,
+                        playlistName: playlistName,
                       );
                     });
               },
@@ -87,8 +84,8 @@ class _PlaylistScreenState extends State<PlaylistScreen> {
             child: ValueListenableBuilder(
               valueListenable: box.listenable(),
               builder: (context, boxes, _) {
-                final playlistSongs = box.get(widget.playlistName)!;
-                // print(widget.playlistName);
+                final playlistSongs = box.get(playlistName)!;
+               
                 return playlistSongs.isEmpty
                     ? SizedBox(
                         child: Center(
@@ -127,58 +124,60 @@ class _PlaylistScreenState extends State<PlaylistScreen> {
                               ),
                             );
                           },
-                          child: ListTile(
-                            leading: SizedBox(
-                              height: 50,
-                              width: 50,
-                              child: QueryArtworkWidget(
-                                id: playlistSongs[index].id!,
-                                type: ArtworkType.AUDIO,
-                                artworkBorder: BorderRadius.circular(15),
-                                artworkFit: BoxFit.cover,
-                                nullArtworkWidget: Container(
-                                  height: 50,
-                                  width: 50,
-                                  decoration: const BoxDecoration(
-                                    borderRadius:
-                                        BorderRadius.all(Radius.circular(15)),
-                                    image: DecorationImage(
-                                      image: AssetImage(
-                                          "assets/images/default.jpeg"),
-                                      fit: BoxFit.cover,
+                          child: GetBuilder<Controller>(builder: (_controller) {
+                            return ListTile(
+                              leading: SizedBox(
+                                height: 50,
+                                width: 50,
+                                child: QueryArtworkWidget(
+                                  id: playlistSongs[index].id!,
+                                  type: ArtworkType.AUDIO,
+                                  artworkBorder: BorderRadius.circular(15),
+                                  artworkFit: BoxFit.cover,
+                                  nullArtworkWidget: Container(
+                                    height: 50,
+                                    width: 50,
+                                    decoration: const BoxDecoration(
+                                      borderRadius:
+                                          BorderRadius.all(Radius.circular(15)),
+                                      image: DecorationImage(
+                                        image: AssetImage(
+                                            "assets/images/default.jpeg"),
+                                        fit: BoxFit.cover,
+                                      ),
                                     ),
                                   ),
                                 ),
                               ),
-                            ),
-                            title: Text(
-                              playlistSongs[index].title!,
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              style: const TextStyle(
-                                  fontWeight: FontWeight.w500,
-                                  color: Colors.white),
-                            ),
-                            subtitle: Text(
-                              playlistSongs[index].artist!,
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              style: const TextStyle(
-                                  fontWeight: FontWeight.w500,
-                                  color: Colors.white),
-                            ),
-                            trailing: IconButton(
-                              onPressed: () {
-                                Fluttertoast.showToast(
-                                    msg: "Deleted Successfully");
-                                setState(() {
+                              title: Text(
+                                playlistSongs[index].title!,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: const TextStyle(
+                                    fontWeight: FontWeight.w500,
+                                    color: Colors.white),
+                              ),
+                              subtitle: Text(
+                                playlistSongs[index].artist!,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: const TextStyle(
+                                    fontWeight: FontWeight.w500,
+                                    color: Colors.white),
+                              ),
+                              trailing: IconButton(
+                                onPressed: () {
+                                  Fluttertoast.showToast(
+                                      msg: "Deleted Successfully");
+
                                   playlistSongs.removeAt(index);
-                                  box.put(widget.playlistName, playlistSongs);
-                                });
-                              },
-                              icon: Icon(Icons.delete, color: Colors.white),
-                            ),
-                          ),
+                                  box.put(playlistName, playlistSongs);
+                                  _controller.update();
+                                },
+                                icon: Icon(Icons.delete, color: Colors.white),
+                              ),
+                            );
+                          }),
                         ),
                       );
               },
