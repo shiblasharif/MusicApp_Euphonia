@@ -26,19 +26,6 @@ class Library extends StatelessWidget {
   //List<Songs> library = [];
   String? playlistName = '';
 
-  // @override
-  // void initState() {
-  //   super.initState();
-  //   controller = TextEditingController();
-  // }
-
-  // @override
-  // void dispose() {
-  //   // Clean up the controller when the widget is disposed.
-  //   controller.dispose();
-  //   super.dispose();
-  // }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -206,85 +193,10 @@ class Library extends StatelessWidget {
                               )
                             : Container()));
               }),
-
-          // ...playlists
-          //     .map((e) => e != "musics" && e != "favorites"
-          //         ? libraryList(
-          //             child: ListTile(
-          //                 onTap: () {
-          //                   Navigator.push(
-          //                     context,
-          //                     MaterialPageRoute(
-          //                         builder: (context) => PlaylistScreen(
-          //                               playlistName: e,
-          //                             )),
-          //                   );
-          //                 },
-          //                 leading: Icon(
-          //                   Icons.playlist_play,
-          //                   color: Colors.white,
-          //                   size: 30,
-          //                 ),
-          //                 title: Text(
-          //                   e.toString(),
-          //                   style: const TextStyle(
-          //                       fontSize: 20, color: Colors.white),
-          //                 ),
-          //                 trailing: PopupMenuButton(
-          //                     icon: Icon(
-          //                       Icons.more_vert,
-          //                       color: Colors.white,
-          //                     ),
-          //                     itemBuilder: (context) => [
-          //                           PopupMenuItem(
-          //                             child: Text('Remove playlist'),
-          //                             value: "0",
-          //                           ),
-          //                         ],
-          //                     onSelected: (value) {
-          //                       if (value == "0") {
-          //                         box.delete(e);
-          //                         setState(() {
-          //                           playlists = box.keys.toList();
-          //                         });
-          //                       }
-          //                     })),
-          //           )
-          //         : Container())
-          //     .toList()
         ],
       ),
     );
   }
-
-  // Padding libraryItems(
-  //     {required title,
-  //     leadIcon = Icons.favorite,
-  //     double leadSize = 28,
-  //     tail,
-  //     leadClr = Colors.white}) {
-  //   return Padding(
-  //     padding: const EdgeInsets.only(left: 5, right: 5, bottom: 15),
-  //     child: ListTile(
-  //         onTap: () => Navigator.push(context,
-  //             MaterialPageRoute(builder: (context) =>  Favourites())),
-  //         leading: Icon(
-  //           Icons.favorite,
-  //           color: Colors.white,
-  //         ),
-  //         title: Text(
-  //           title,
-  //           style: const TextStyle(fontSize: 20, color: Colors.white),
-  //         ),
-  //         trailing: IconButton(
-  //           onPressed: () => Navigator.push(context,MaterialPageRoute(builder: (context) =>  Favourites())),
-  //           icon: Icon(
-  //             tail,
-  //             size: 20,
-  //           ),
-  //         )),
-  //   );
-  // }
 
   Padding libraryList({required child}) {
     return Padding(
@@ -292,26 +204,4 @@ class Library extends StatelessWidget {
       child: child,
     );
   }
-
-  // void submit() {
-  //   playlistName = controller.text;
-  //   List<Songs> librayry = [];
-  //   List? excistingName = [];
-  //   if (playlists.isNotEmpty) {
-  //     excistingName =
-  //         playlists.where((element) => element == playlistName).toList();
-  //   }
-
-  //   if (playlistName != '' && excistingName.isEmpty) {
-  //     box.put(playlistName, librayry);
-  //     Navigator.of(context).pop();
-  //     setState(() {
-  //       playlists = box.keys.toList();
-  //     });
-  //   }
-  //   else {
-  //     ScaffoldMessenger.of(context).showSnackBar(excistingPlaylist);
-  //   }
-  //   controller.clear();
-  // }
 }

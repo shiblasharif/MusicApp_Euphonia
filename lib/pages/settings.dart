@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:music_player/controller/controller.dart';
+import 'package:music_player/controller/setting_controller.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class Settings extends StatelessWidget {
   Settings({Key? key}) : super(key: key);
 
-  bool notify = true;
+  // late bool notify;
   final snackBarNotify = SnackBar(
     content: const Text(
       'App need to restart to change the settings',
@@ -14,34 +14,16 @@ class Settings extends StatelessWidget {
     ),
     backgroundColor: Colors.grey[900],
   );
-
-  // @override
-  // void initState() {
-  //   super.initState();
-  //   getSwitchValues();
-  // }
-
-  getSwitchValues() async {
-    notify = await getSwitchState();
-    //setState(() {});
-  }
+  final _srttingsController = Get.put(SettingsController());
 
   Future<bool> saveSwitchState(bool value) async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    prefs.setBool("switchState", value);
     return prefs.setBool("switchState", value);
-  }
-
-  Future<bool> getSwitchState() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    bool? notify = prefs.getBool("switchState");
-
-    return notify ?? true;
   }
 
   @override
   Widget build(BuildContext context) {
-    getSwitchValues();
+  
     return Scaffold(
       backgroundColor: const Color(0xFF091B46),
       appBar: AppBar(
@@ -58,8 +40,7 @@ class Settings extends StatelessWidget {
           style: TextStyle(fontSize: 30),
         ),
       ),
-      body: GetBuilder<Controller>(builder: (_controller) {
-        return Column(
+      body: Column(
           children: [
             ListTile(
               leading: const Icon(
@@ -71,16 +52,19 @@ class Settings extends StatelessWidget {
                 style: TextStyle(fontSize: 20, color: Colors.white),
               ),
               trailing: IconButton(
-                  icon: GetBuilder<Controller>(builder: (_controller) {
+                  icon: GetBuilder<SettingsController>(builder: (_controller) {
+                    print(_srttingsController.notify);
                     return Switch(
-                        value: notify,
+                        value: _srttingsController.notify ?? true,
                         activeColor: Colors.white,
                         onChanged: (bool value) {
-                          notify = value;
+                          _srttingsController.notify = value;
+                          print(_srttingsController.notify);
                           saveSwitchState(value);
-                          if (notify == true) {
+                          if (_srttingsController.notify == true) {
                             ScaffoldMessenger.of(context)
                                 .showSnackBar(snackBarNotify);
+                            // _controller.update(["onoff"]);
                           } else {
                             ScaffoldMessenger.of(context)
                                 .showSnackBar(snackBarNotify);
@@ -149,8 +133,8 @@ class Settings extends StatelessWidget {
             const SizedBox(height: 250),
             bottom(),
           ],
-        );
-      }),
+        )
+      
     );
   }
 }

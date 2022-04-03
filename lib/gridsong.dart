@@ -18,11 +18,6 @@ class Gridsong extends StatelessWidget {
   List<Audio> audiosongs = [];
   Gridsong({Key? key, required this.audiosongs}) : super(key: key);
 
-//   @override
-//   _GridsongState createState() => _GridsongState();
-// }
-
-// class _GridsongState extends State<Gridsong> {
   List? dbSongs = [];
   List playlists = [];
   List<dynamic>? favorites = [];

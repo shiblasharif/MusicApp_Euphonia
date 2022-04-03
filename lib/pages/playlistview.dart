@@ -23,17 +23,6 @@ class PlaylistScreen extends StatelessWidget {
 
   final box = Boxes.getInstance();
 
-  // @override
-  // void initState() {
-  //   super.initState();
-  //   // getSongs();
-  // }
-
-  // getSongs() {
-  //   dbSongs = box.get("musics") as List<Songs>;
-  //   playlistSongs = box.get(widget.playlistName);
-  // }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
